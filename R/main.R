@@ -5,6 +5,13 @@ library(BradleyTerry2)
 library(tidyverse)
 
 TennisTidyr <- function(startyear, endyear, testset, numgames) {
+  #' Get data and unique player names from year range
+  #' @param startyear Year to start from
+  #' @param endyear Last year to include
+  #' @param testset Year of the test set
+  #' @param numgames Minimum number of games per player
+  #' @returns 2 datasets, accessible by $train and $test containing the
+  #' training set and test set, and $main_names, the unique players.
   # Adding errors for if years will not match the dataset
   if (!(startyear > 2012 & startyear < 2023)) {
     stop("Error: Start year must be between 2013 and 2022")
@@ -78,11 +85,21 @@ TennisTidyr <- function(startyear, endyear, testset, numgames) {
 
 
 time_weighting <- function(t, weight) {
+  #' Return the weighting parameter for a given time
+  #' @param t time since match
+  #' @param weight weight to be applied
+  #' @returns weight to be applied to match
   return(min(weight, weight^t))
 }
 
 func <- function(matches, data, indices) {
-
+  #' Gives cumulative data about each player across all matches
+  #' @param matches a dataframe with 2 columns: winner and loser
+  #' @param data is the dataframe containing all the data
+  #' @param indices is a vector of row numbers in 'data' corresponding to the matches in 'matches'
+  #' @returns list(w_output, l_output),
+  #' w_output: dataframe of all the data for the winner in each match
+  #' l_output: dataframe of all the data for the loser in each match
   players <- unique( c(matches[,1], matches[,2]) )
   # 'scores' keeps track of each player's numbers so far.
   scores <- data.frame(Player=players,
@@ -157,6 +174,11 @@ func_surface <- function(MATCHES, PREV_WINS) {
 }
 
 get_recency_weights <- function(train_set, recency_weighting) {
+  #' Get weights to be applied to each match based on recency
+  #' @param train_set dataframe of training set
+  #' @param recency_weighting weight to be applied to each match
+  #' @returns vector of weights to be applied to each match
+  #' Note: if train_set does not contain a 'tourney_date' column, returns NA
   tryCatch(
     {
       train_set$tourney_date
@@ -176,6 +198,12 @@ get_recency_weights <- function(train_set, recency_weighting) {
 
 
 predict_ <- function(player1, player2, df_coeff) {
+  #' Predicts the probability that player1 will beat player2
+  #' @param player1 name of 1st player
+  #' @param player2 name of 2nd player
+  #' @param df_coeff dataframe of coefficients
+  #' @returns: vector of prediction probabilities [1] and boolean of whether player1 won [2]
+
   lambda1 <- df_coeff[player1,1]
   lambda2 <- df_coeff[player2,1]
   if (is.na(lambda1)) {
@@ -188,6 +216,12 @@ predict_ <- function(player1, player2, df_coeff) {
 
 
 predict_matches <- function(test_set, names, model) {
+  #' Predicts the probability that player1 will beat player2 for each match in test_set
+  #' @param test_set dataframe of test set
+  #' @param names vector of names of players in test set
+  #' @param model BTm model
+  #' @returns dataframe of predictions for each match in test_set
+  #'
   df_coeff <- as.data.frame(BTabilities(model))
 
   # make predictions
@@ -210,6 +244,12 @@ standard_error <- function(x) sd(x) / sqrt(length(x))
 
 
 score_predictions <- function(predictions) {
+  #' Scores predictions
+  #' @param predictions dataframe of predictions
+  #' @returns list of accuracy, avg probability, avg probability standard error,
+  #'         avg log probability, avg log probability standard error
+  #' Note: predictions must contain a 'pred' column
+  #'
   # accuracy
   predictions$correct <- predictions$pred > 0.5
   num <-nrow(filter(predictions, predictions$correct))
