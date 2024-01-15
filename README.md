@@ -17,3 +17,5 @@ Ocassionally you may get an error: `tibble() not found`. To solve this, install 
 `-man` Contains documentation for the functions provided by the package.
 
 `-R` Contains the R code in `main.R`.
+
+`-Writing` Contains the write up for the project, `.pdf`, and `lab_notebook.Rmd` (and knitted `.pdf`) reproducing the results.
