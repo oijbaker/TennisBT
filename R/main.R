@@ -1,8 +1,8 @@
-library(tidyr)
 library(readr)
 library(dplyr)
 library(BradleyTerry2)
 library(tidyverse)
+library(tidyr)
 
 TennisTidyr <- function(startyear, endyear, testset, numgames) {
   #' Get data and unique player names from year range
@@ -27,6 +27,9 @@ TennisTidyr <- function(startyear, endyear, testset, numgames) {
   }
   if (endyear > testset) {
     stop("Error: End year must be less than test set")
+  }
+  if (numgames <= 0) {
+    stop("Error: Number of games must be greater than 0")
   }
 
   datasets <- list("2013" = wta_matches_2013, "2014" = wta_matches_2014,
@@ -85,6 +88,12 @@ TennisTidyr <- function(startyear, endyear, testset, numgames) {
 
 
 time_weighting <- function(t, weight) {
+  if (weight <= 0 || weight > 1) {
+    stop("Error: Weight must be between 0 and 1")
+  }
+  if (t < 0) {
+    stop("Error: Time must be positive")
+  }
   #' Return the weighting parameter for a given time
   #' @param t time since match
   #' @param weight weight to be applied
@@ -203,6 +212,13 @@ predict_ <- function(player1, player2, df_coeff) {
   #' @param player2 name of 2nd player
   #' @param df_coeff dataframe of coefficients
   #' @returns: vector of prediction probabilities [1] and boolean of whether player1 won [2]
+
+  if (!(player1 %in% rownames(df_coeff))) {
+    stop("Player 1 is not in the coefficient dataframe")
+  }
+  if (!(player2 %in% rownames(df_coeff))) {
+    stop("Player 2 is not in the coefficient dataframe")
+  }
 
   lambda1 <- df_coeff[player1,1]
   lambda2 <- df_coeff[player2,1]
